@@ -107,6 +107,50 @@
   justify-content: center;
   font-size: 1.1rem;
 }
+.metrics-section {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.metrics-table-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.metrics-table th, .metrics-table td {
+  border: 1px solid #e0e0e0;
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+}
+.metrics-table th {
+  background: #e8eaf6;
+  text-align: center;
+}
+.metrics-table td:first-child, .metrics-table th:first-child {
+  text-align: left;
+}
+
+.chart-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0.5rem auto 1.5rem auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1rem 0.5rem 0.5rem 0.5rem;
+}
+
 @media (max-width: 600px) {
   .container {
     padding: 1rem 0.5rem;
@@ -118,5 +162,14 @@
   .revenue-table th, .revenue-table td {
     padding: 0.4rem 0.3rem;
     font-size: 0.95rem;
+  }
+}
+@media (max-width: 700px) {
+  .chart-container {
+    max-width: 100%;
+    padding: 0.5rem 0.1rem 0.1rem 0.1rem;
+  }
+  .metrics-section {
+    gap: 1.2rem;
   }
 }

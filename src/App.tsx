@@ -1,5 +1,19 @@
 import { useState } from 'react'
 import './App.css'
+import { Bar, Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface RevenueData {
   date: string;
@@ -11,7 +25,12 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
-  const [metrics, setMetrics] = useState<{cagr?: number, avgGrowth?: number}>({});
+  const [metrics, setMetrics] = useState<{
+    operatingIncomeByYear?: { year: string, operatingIncome: number }[],
+    netIncomeByYear?: { year: string, netIncome: number }[],
+    grossMarginByYear?: { year: string, grossMarginPct: number }[],
+    netMarginByYear?: { year: string, netMarginPct: number }[]
+  }>({});
 
   const fetchRevenue = async (symbol: string) => {
     setLoading(true);
@@ -32,22 +51,38 @@ function App() {
         date: item.date,
         revenue: item.revenue || item.revenueUSD || item.totalRevenue || 0
       })).reverse();
+      // Extract operating income, net income, gross margin %, net margin % by year
+      const operatingIncomeByYear = data.map((item: any) => ({
+        year: item.date,
+        operatingIncome: item.operatingIncome || item.operatingIncomeUSD || 0
+      })).reverse();
+      const netIncomeByYear = data.map((item: any) => ({
+        year: item.date,
+        netIncome: item.netIncome || item.netIncomeUSD || 0
+      })).reverse();
+      const grossMarginByYear = data.map((item: any) => {
+        const revenue = item.revenue || item.revenueUSD || item.totalRevenue || 0;
+        const grossProfit = item.grossProfit || item.grossProfitUSD || 0;
+        return {
+          year: item.date,
+          grossMarginPct: revenue !== 0 ? (grossProfit / revenue) * 100 : 0
+        };
+      }).reverse();
+      const netMarginByYear = data.map((item: any) => {
+        const revenue = item.revenue || item.revenueUSD || item.totalRevenue || 0;
+        const netIncome = item.netIncome || item.netIncomeUSD || 0;
+        return {
+          year: item.date,
+          netMarginPct: revenue !== 0 ? (netIncome / revenue) * 100 : 0
+        };
+      }).reverse();
       setRevenueData(revenues);
-      // Calculate metrics
-      if (revenues.length > 1) {
-        const first = revenues[0].revenue;
-        const last = revenues[revenues.length - 1].revenue;
-        const years = revenues.length - 1;
-        const cagr = first > 0 && last > 0 ? (Math.pow(last / first, 1 / years) - 1) * 100 : undefined;
-        let growthRates = [];
-        for (let i = 1; i < revenues.length; i++) {
-          if (revenues[i-1].revenue > 0) {
-            growthRates.push(((revenues[i].revenue - revenues[i-1].revenue) / revenues[i-1].revenue) * 100);
-          }
-        }
-        const avgGrowth = growthRates.length ? growthRates.reduce((a, b) => a + b, 0) / growthRates.length : undefined;
-        setMetrics({ cagr, avgGrowth });
-      }
+      setMetrics({
+        operatingIncomeByYear,
+        netIncomeByYear,
+        grossMarginByYear,
+        netMarginByYear
+      });
     } catch (e) {
       setError('Failed to fetch data.');
     }
@@ -78,7 +113,39 @@ function App() {
       {error && <div className="error">{error}</div>}
       {revenueData.length > 0 && (
         <div className="results">
-          <h2>Revenue (Last 10 Years)</h2>
+          <h2>Revenue {revenueData.length === 10 ? '(Last 10 Years)' : `(Last ${revenueData.length} Years)`}</h2>
+          <div className="chart-container">
+            <Line
+              data={{
+                labels: revenueData.map(r => r.date),
+                datasets: [
+                  {
+                    label: 'Revenue (USD)',
+                    data: revenueData.map(r => r.revenue),
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                    tension: 0.3,
+                    fill: true,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` } } },
+                scales: {
+                  x: {
+                    title: { display: true, text: 'Year', font: { size: 16 } },
+                    ticks: { font: { size: 14 } }
+                  },
+                  y: {
+                    title: { display: true, text: 'USD', font: { size: 16 } },
+                    ticks: { font: { size: 14 }, callback: v => `$${(+v).toLocaleString()}` }
+                  }
+                }
+              }}
+            />
+            <div className="stat-desc">Total revenue reported by the company for each year.</div>
+          </div>
           <table className="revenue-table">
             <thead>
               <tr>
@@ -95,12 +162,218 @@ function App() {
               ))}
             </tbody>
           </table>
-          <div className="metrics">
-            {metrics.cagr !== undefined && (
-              <div><strong>CAGR:</strong> {metrics.cagr.toFixed(2)}%</div>
+          <div className="metrics-section">
+            {metrics.operatingIncomeByYear && (
+              <div>
+                <div className="metrics-table-title">Operating Income by Year</div>
+                <div className="chart-container">
+                  <Line
+                    data={{
+                      labels: metrics.operatingIncomeByYear.map(row => row.year),
+                      datasets: [
+                        {
+                          label: 'Operating Income (USD)',
+                          data: metrics.operatingIncomeByYear.map(row => row.operatingIncome),
+                          borderColor: '#43a047',
+                          backgroundColor: 'rgba(67,160,71,0.15)',
+                          tension: 0.3,
+                          fill: true,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` } } },
+                      scales: {
+                        x: {
+                          title: { display: true, text: 'Year', font: { size: 16 } },
+                          ticks: { font: { size: 14 } }
+                        },
+                        y: {
+                          title: { display: true, text: 'USD', font: { size: 16 } },
+                          ticks: { font: { size: 14 }, callback: v => `$${(+v).toLocaleString()}` }
+                        }
+                      }
+                    }}
+                  />
+                  <div className="stat-desc">Operating income is the profit from core business operations, excluding taxes and interest.</div>
+                </div>
+                <table className="metrics-table">
+                  <thead>
+                    <tr>
+                      <th>Year</th>
+                      <th>Operating Income (USD)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.operatingIncomeByYear.map((row) => (
+                      <tr key={row.year}>
+                        <td>{row.year}</td>
+                        <td>{row.operatingIncome.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
-            {metrics.avgGrowth !== undefined && (
-              <div><strong>Avg. YoY Growth:</strong> {metrics.avgGrowth.toFixed(2)}%</div>
+            {metrics.netIncomeByYear && (
+              <div>
+                <div className="metrics-table-title">Net Income by Year</div>
+                <div className="chart-container">
+                  <Line
+                    data={{
+                      labels: metrics.netIncomeByYear.map(row => row.year),
+                      datasets: [
+                        {
+                          label: 'Net Income (USD)',
+                          data: metrics.netIncomeByYear.map(row => row.netIncome),
+                          borderColor: '#fbc02d',
+                          backgroundColor: 'rgba(251,192,45,0.15)',
+                          tension: 0.3,
+                          fill: true,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` } } },
+                      scales: {
+                        x: {
+                          title: { display: true, text: 'Year', font: { size: 16 } },
+                          ticks: { font: { size: 14 } }
+                        },
+                        y: {
+                          title: { display: true, text: 'USD', font: { size: 16 } },
+                          ticks: { font: { size: 14 }, callback: v => `$${(+v).toLocaleString()}` }
+                        }
+                      }
+                    }}
+                  />
+                  <div className="stat-desc">Net income is the company’s total profit after all expenses, taxes, and costs.</div>
+                </div>
+                <table className="metrics-table">
+                  <thead>
+                    <tr>
+                      <th>Year</th>
+                      <th>Net Income (USD)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.netIncomeByYear.map((row) => (
+                      <tr key={row.year}>
+                        <td>{row.year}</td>
+                        <td>{row.netIncome.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {metrics.grossMarginByYear && (
+              <div>
+                <div className="metrics-table-title">Gross Margin % by Year</div>
+                <div className="chart-container">
+                  <Line
+                    data={{
+                      labels: metrics.grossMarginByYear.map(row => row.year),
+                      datasets: [
+                        {
+                          label: 'Gross Margin (%)',
+                          data: metrics.grossMarginByYear.map(row => row.grossMarginPct),
+                          borderColor: '#8e24aa',
+                          backgroundColor: 'rgba(142,36,170,0.15)',
+                          tension: 0.3,
+                          fill: true,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}%` } } },
+                      scales: {
+                        x: {
+                          title: { display: true, text: 'Year', font: { size: 16 } },
+                          ticks: { font: { size: 14 } }
+                        },
+                        y: {
+                          title: { display: true, text: '%', font: { size: 16 } },
+                          ticks: { font: { size: 14 }, callback: v => `${(+v).toFixed(2)}%` }
+                        }
+                      }
+                    }}
+                  />
+                  <div className="stat-desc">Gross margin % shows the percentage of revenue left after deducting the cost of goods sold.</div>
+                </div>
+                <table className="metrics-table">
+                  <thead>
+                    <tr>
+                      <th>Year</th>
+                      <th>Gross Margin (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.grossMarginByYear.map((row) => (
+                      <tr key={row.year}>
+                        <td>{row.year}</td>
+                        <td>{row.grossMarginPct.toFixed(2)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {metrics.netMarginByYear && (
+              <div>
+                <div className="metrics-table-title">Net Margin % by Year</div>
+                <div className="chart-container">
+                  <Line
+                    data={{
+                      labels: metrics.netMarginByYear.map(row => row.year),
+                      datasets: [
+                        {
+                          label: 'Net Margin (%)',
+                          data: metrics.netMarginByYear.map(row => row.netMarginPct),
+                          borderColor: '#d32f2f',
+                          backgroundColor: 'rgba(211,47,47,0.15)',
+                          tension: 0.3,
+                          fill: true,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}%` } } },
+                      scales: {
+                        x: {
+                          title: { display: true, text: 'Year', font: { size: 16 } },
+                          ticks: { font: { size: 14 } }
+                        },
+                        y: {
+                          title: { display: true, text: '%', font: { size: 16 } },
+                          ticks: { font: { size: 14 }, callback: v => `${(+v).toFixed(2)}%` }
+                        }
+                      }
+                    }}
+                  />
+                  <div className="stat-desc">Net margin % shows the percentage of revenue that remains as profit after all expenses.</div>
+                </div>
+                <table className="metrics-table">
+                  <thead>
+                    <tr>
+                      <th>Year</th>
+                      <th>Net Margin (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.netMarginByYear.map((row) => (
+                      <tr key={row.year}>
+                        <td>{row.year}</td>
+                        <td>{row.netMarginPct.toFixed(2)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
