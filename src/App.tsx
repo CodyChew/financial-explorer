@@ -19,6 +19,20 @@ interface RevenueData {
   revenue: number;
 }
 
+// Utility to format large numbers for y-axis
+function formatLargeNumber(num: number): string {
+  if (Math.abs(num) >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+  if (Math.abs(num) >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(num) >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
+  return `$${num.toLocaleString()}`;
+}
+
+// Chart.js y-axis tick callback for large numbers
+const yAxisTickCallback = (tickValue: string | number) => {
+  const num = typeof tickValue === 'string' ? parseFloat(tickValue) : tickValue;
+  return formatLargeNumber(num);
+};
+
 function App() {
   const [ticker, setTicker] = useState('');
   const [loading, setLoading] = useState(false);
@@ -116,7 +130,7 @@ function App() {
           <div className="chart-container">
             <Line
               data={{
-                labels: revenueData.map(r => r.date),
+                labels: revenueData.map(r => r.date.slice(0, 4)),
                 datasets: [
                   {
                     label: 'Revenue (USD)',
@@ -130,15 +144,26 @@ function App() {
               }}
               options={{
                 responsive: true,
-                plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` } } },
+                plugins: {
+                  legend: { display: false, labels: { color: '#e3f2fd', font: { weight: 'bold' } } },
+                  title: { display: false },
+                  tooltip: {
+                    callbacks: { label: ctx => formatLargeNumber(ctx.parsed.y) },
+                    backgroundColor: '#23293a',
+                    titleColor: '#e3f2fd',
+                    bodyColor: '#e3f2fd',
+                    borderColor: '#394867',
+                    borderWidth: 1
+                  }
+                },
                 scales: {
                   x: {
-                    title: { display: true, text: 'Year', font: { size: 16 } },
-                    ticks: { font: { size: 14 } }
+                    title: { display: true, text: 'Year', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                    ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd' }
                   },
                   y: {
-                    title: { display: true, text: 'USD', font: { size: 16 } },
-                    ticks: { font: { size: 14 }, callback: v => `$${(+v).toLocaleString()}` }
+                    title: { display: true, text: 'USD', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                    ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd', callback: yAxisTickCallback }
                   }
                 }
               }}
@@ -155,8 +180,8 @@ function App() {
             <tbody>
               {revenueData.map((r) => (
                 <tr key={r.date}>
-                  <td>{r.date}</td>
-                  <td>{r.revenue.toLocaleString()}</td>
+                  <td>{r.date.slice(0, 4)}</td>
+                  <td>{formatLargeNumber(r.revenue)}</td>
                 </tr>
               ))}
             </tbody>
@@ -168,7 +193,7 @@ function App() {
                 <div className="chart-container">
                   <Line
                     data={{
-                      labels: metrics.operatingIncomeByYear.map(row => row.year),
+                      labels: metrics.operatingIncomeByYear.map(row => row.year.slice(0, 4)),
                       datasets: [
                         {
                           label: 'Operating Income (USD)',
@@ -182,15 +207,26 @@ function App() {
                     }}
                     options={{
                       responsive: true,
-                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` } } },
+                      plugins: {
+                        legend: { display: false, labels: { color: '#e3f2fd', font: { weight: 'bold' } } },
+                        title: { display: false },
+                        tooltip: {
+                          callbacks: { label: ctx => formatLargeNumber(ctx.parsed.y) },
+                          backgroundColor: '#23293a',
+                          titleColor: '#e3f2fd',
+                          bodyColor: '#e3f2fd',
+                          borderColor: '#394867',
+                          borderWidth: 1
+                        }
+                      },
                       scales: {
                         x: {
-                          title: { display: true, text: 'Year', font: { size: 16 } },
-                          ticks: { font: { size: 14 } }
+                          title: { display: true, text: 'Year', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd' }
                         },
                         y: {
-                          title: { display: true, text: 'USD', font: { size: 16 } },
-                          ticks: { font: { size: 14 }, callback: v => `$${(+v).toLocaleString()}` }
+                          title: { display: true, text: 'USD', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd', callback: yAxisTickCallback }
                         }
                       }
                     }}
@@ -207,8 +243,8 @@ function App() {
                   <tbody>
                     {metrics.operatingIncomeByYear.map((row) => (
                       <tr key={row.year}>
-                        <td>{row.year}</td>
-                        <td>{row.operatingIncome.toLocaleString()}</td>
+                        <td>{row.year.slice(0, 4)}</td>
+                        <td>{formatLargeNumber(row.operatingIncome)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -221,7 +257,7 @@ function App() {
                 <div className="chart-container">
                   <Line
                     data={{
-                      labels: metrics.netIncomeByYear.map(row => row.year),
+                      labels: metrics.netIncomeByYear.map(row => row.year.slice(0, 4)),
                       datasets: [
                         {
                           label: 'Net Income (USD)',
@@ -235,15 +271,26 @@ function App() {
                     }}
                     options={{
                       responsive: true,
-                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.parsed.y.toLocaleString()}` } } },
+                      plugins: {
+                        legend: { display: false, labels: { color: '#e3f2fd', font: { weight: 'bold' } } },
+                        title: { display: false },
+                        tooltip: {
+                          callbacks: { label: ctx => formatLargeNumber(ctx.parsed.y) },
+                          backgroundColor: '#23293a',
+                          titleColor: '#e3f2fd',
+                          bodyColor: '#e3f2fd',
+                          borderColor: '#394867',
+                          borderWidth: 1
+                        }
+                      },
                       scales: {
                         x: {
-                          title: { display: true, text: 'Year', font: { size: 16 } },
-                          ticks: { font: { size: 14 } }
+                          title: { display: true, text: 'Year', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd' }
                         },
                         y: {
-                          title: { display: true, text: 'USD', font: { size: 16 } },
-                          ticks: { font: { size: 14 }, callback: v => `$${(+v).toLocaleString()}` }
+                          title: { display: true, text: 'USD', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd', callback: yAxisTickCallback }
                         }
                       }
                     }}
@@ -260,8 +307,8 @@ function App() {
                   <tbody>
                     {metrics.netIncomeByYear.map((row) => (
                       <tr key={row.year}>
-                        <td>{row.year}</td>
-                        <td>{row.netIncome.toLocaleString()}</td>
+                        <td>{row.year.slice(0, 4)}</td>
+                        <td>{formatLargeNumber(row.netIncome)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -274,7 +321,7 @@ function App() {
                 <div className="chart-container">
                   <Line
                     data={{
-                      labels: metrics.grossMarginByYear.map(row => row.year),
+                      labels: metrics.grossMarginByYear.map(row => row.year.slice(0, 4)),
                       datasets: [
                         {
                           label: 'Gross Margin (%)',
@@ -288,15 +335,26 @@ function App() {
                     }}
                     options={{
                       responsive: true,
-                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}%` } } },
+                      plugins: {
+                        legend: { display: false, labels: { color: '#e3f2fd', font: { weight: 'bold' } } },
+                        title: { display: false },
+                        tooltip: {
+                          callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}%` },
+                          backgroundColor: '#23293a',
+                          titleColor: '#e3f2fd',
+                          bodyColor: '#e3f2fd',
+                          borderColor: '#394867',
+                          borderWidth: 1
+                        }
+                      },
                       scales: {
                         x: {
-                          title: { display: true, text: 'Year', font: { size: 16 } },
-                          ticks: { font: { size: 14 } }
+                          title: { display: true, text: 'Year', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd' }
                         },
                         y: {
-                          title: { display: true, text: '%', font: { size: 16 } },
-                          ticks: { font: { size: 14 }, callback: v => `${(+v).toFixed(2)}%` }
+                          title: { display: true, text: '%', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd', callback: v => `${(+v).toFixed(2)}%` }
                         }
                       }
                     }}
@@ -313,7 +371,7 @@ function App() {
                   <tbody>
                     {metrics.grossMarginByYear.map((row) => (
                       <tr key={row.year}>
-                        <td>{row.year}</td>
+                        <td>{row.year.slice(0, 4)}</td>
                         <td>{row.grossMarginPct.toFixed(2)}%</td>
                       </tr>
                     ))}
@@ -327,7 +385,7 @@ function App() {
                 <div className="chart-container">
                   <Line
                     data={{
-                      labels: metrics.netMarginByYear.map(row => row.year),
+                      labels: metrics.netMarginByYear.map(row => row.year.slice(0, 4)),
                       datasets: [
                         {
                           label: 'Net Margin (%)',
@@ -341,15 +399,26 @@ function App() {
                     }}
                     options={{
                       responsive: true,
-                      plugins: { legend: { display: false }, title: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}%` } } },
+                      plugins: {
+                        legend: { display: false, labels: { color: '#e3f2fd', font: { weight: 'bold' } } },
+                        title: { display: false },
+                        tooltip: {
+                          callbacks: { label: ctx => `${ctx.parsed.y.toFixed(2)}%` },
+                          backgroundColor: '#23293a',
+                          titleColor: '#e3f2fd',
+                          bodyColor: '#e3f2fd',
+                          borderColor: '#394867',
+                          borderWidth: 1
+                        }
+                      },
                       scales: {
                         x: {
-                          title: { display: true, text: 'Year', font: { size: 16 } },
-                          ticks: { font: { size: 14 } }
+                          title: { display: true, text: 'Year', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd' }
                         },
                         y: {
-                          title: { display: true, text: '%', font: { size: 16 } },
-                          ticks: { font: { size: 14 }, callback: v => `${(+v).toFixed(2)}%` }
+                          title: { display: true, text: '%', font: { size: 16, weight: 'bold' }, color: '#e3f2fd' },
+                          ticks: { font: { size: 14, weight: 'bold' }, color: '#e3f2fd', callback: v => `${(+v).toFixed(2)}%` }
                         }
                       }
                     }}
@@ -366,7 +435,7 @@ function App() {
                   <tbody>
                     {metrics.netMarginByYear.map((row) => (
                       <tr key={row.year}>
-                        <td>{row.year}</td>
+                        <td>{row.year.slice(0, 4)}</td>
                         <td>{row.netMarginPct.toFixed(2)}%</td>
                       </tr>
                     ))}

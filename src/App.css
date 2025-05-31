@@ -1,8 +1,22 @@
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: #181c24;
+  color: #f3f6fa;
+}
+
 #root {
-  max-width: 1280px;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 0.5rem;
   text-align: center;
+  background: #181c24;
 }
 
 .logo {
@@ -42,156 +56,200 @@
 }
 
 .container {
-  max-width: 600px;
-  margin: 2rem auto;
-  background: #fff;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem 1rem;
+  background: #181c24;
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-  padding: 2rem 1.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .input-form {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
   justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 .ticker-input {
-  flex: 1 1 180px;
-  padding: 0.5rem 1rem;
+  background: #23293a;
+  color: #f3f6fa;
+  border: 1.5px solid #394867;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
   font-size: 1.1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  outline: none;
+  transition: border 0.2s;
+  box-shadow: 0 2px 8px #0d111733;
 }
+.ticker-input:focus {
+  border-color: #90caf9;
+}
+
 .submit-btn {
-  padding: 0.5rem 1.5rem;
-  font-size: 1.1rem;
-  background: #646cff;
+  background: linear-gradient(90deg, #1976d2 60%, #43a047 100%);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 2px 8px #0d111733;
+  transition: background 0.2s, transform 0.1s;
 }
 .submit-btn:disabled {
-  background: #ccc;
+  background: #394867;
+  color: #aaa;
   cursor: not-allowed;
 }
-.error {
-  color: #d32f2f;
-  margin-bottom: 1rem;
+.submit-btn:not(:disabled):hover {
+  background: linear-gradient(90deg, #43a047 60%, #1976d2 100%);
+  transform: translateY(-2px) scale(1.03);
 }
+
+.error {
+  color: #ff5252;
+  background: #23293a;
+  border: 1px solid #d32f2f;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem auto 2rem auto;
+  max-width: 400px;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 2px 8px #0d111733;
+}
+
 .results {
   margin-top: 2rem;
 }
-.revenue-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-}
-.revenue-table th, .revenue-table td {
-  border: 1px solid #eee;
-  padding: 0.5rem 0.75rem;
-  text-align: right;
-}
-.revenue-table th {
-  background: #f5f5f5;
+
+h1 {
   text-align: center;
-}
-.revenue-table td:first-child, .revenue-table th:first-child {
-  text-align: left;
-}
-.metrics {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-.metrics-section {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 2rem;
+  color: #90caf9;
+  text-shadow: 0 2px 16px #0d1117;
 }
 
-.metrics-table-title {
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
+h2 {
+  color: #90caf9;
+  font-size: 2rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  font-weight: 600;
 }
 
-.metrics-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 0.5rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.metrics-table th, .metrics-table td {
-  border: 1px solid #e0e0e0;
-  padding: 0.5rem 0.75rem;
-  text-align: right;
-}
-.metrics-table th {
-  background: #e8eaf6;
-  text-align: center;
-}
-.metrics-table td:first-child, .metrics-table th:first-child {
+.stat-desc {
+  color: #b0bec5;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
   text-align: left;
 }
 
 .chart-container {
-  width: 100%;
-  max-width: 600px;
-  margin: 0.5rem auto 1.5rem auto;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 1rem 0.5rem 0.5rem 0.5rem;
+  background: #23293a;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #0d111755;
+  padding: 1.5rem 1rem 1rem 1rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
 }
 
-@media (max-width: 600px) {
-  .container {
-    padding: 1rem 0.5rem;
-  }
-  .metrics {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .revenue-table th, .revenue-table td {
-    padding: 0.4rem 0.3rem;
-    font-size: 0.95rem;
-  }
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 2rem;
+  background: #23293a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px #0d111733;
 }
+th, td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+th {
+  background: #22263a;
+  color: #90caf9;
+  font-weight: 700;
+  font-size: 1.08rem;
+  border-bottom: 2px solid #394867;
+}
+td {
+  border-bottom: 1px solid #394867;
+  font-size: 1.05rem;
+}
+tr:nth-child(even) td {
+  background: #20243a;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+
+.metrics-section {
+  margin-top: 2.5rem;
+}
+.metrics-table-title {
+  color: #fbc02d;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+  margin-top: 2.2rem;
+  text-shadow: 0 1px 8px #0d1117;
+}
+
+/* Responsive styles */
 @media (max-width: 700px) {
   .container {
-    padding: 0.5rem 0.1rem;
+    padding: 1rem 0.2rem 2rem 0.2rem;
   }
-  .metrics-section {
-    gap: 1.2rem;
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+  }
+  .input-form {
+    flex-direction: column;
+    gap: 0.7rem;
+    align-items: stretch;
   }
   .chart-container {
-    max-width: 100%;
-    padding: 0.5rem 0.1rem 0.1rem 0.1rem;
-    overflow-x: auto;
+    padding: 1rem 0.2rem 0.7rem 0.2rem;
   }
-  .metrics-table, .revenue-table {
-    font-size: 0.95rem;
-    min-width: 400px;
-    display: block;
-    overflow-x: auto;
-    width: 100%;
+  table, th, td {
+    font-size: 0.98rem;
   }
-  .metrics-table th, .metrics-table td, .revenue-table th, .revenue-table td {
-    padding: 0.4rem 0.3rem;
-    font-size: 0.95rem;
-    white-space: nowrap;
+  .metrics-table-title {
+    font-size: 1.05rem;
   }
-  .metrics-table thead, .revenue-table thead {
-    display: table-header-group;
-  }
-  .metrics-table tbody, .revenue-table tbody {
-    display: table-row-group;
-  }
+}
+
+/* Chart.js overrides for dark theme */
+.canvasjs-chart-container, .chartjs-render-monitor, canvas {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #23293a;
+}
+::-webkit-scrollbar-thumb {
+  background: #394867;
+  border-radius: 8px;
+}
+
+/* Selection color */
+::selection {
+  background: #1976d2;
+  color: #fff;
 }
