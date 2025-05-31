@@ -165,11 +165,33 @@
   }
 }
 @media (max-width: 700px) {
-  .chart-container {
-    max-width: 100%;
-    padding: 0.5rem 0.1rem 0.1rem 0.1rem;
+  .container {
+    padding: 0.5rem 0.1rem;
   }
   .metrics-section {
     gap: 1.2rem;
+  }
+  .chart-container {
+    max-width: 100%;
+    padding: 0.5rem 0.1rem 0.1rem 0.1rem;
+    overflow-x: auto;
+  }
+  .metrics-table, .revenue-table {
+    font-size: 0.95rem;
+    min-width: 400px;
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+  }
+  .metrics-table th, .metrics-table td, .revenue-table th, .revenue-table td {
+    padding: 0.4rem 0.3rem;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  .metrics-table thead, .revenue-table thead {
+    display: table-header-group;
+  }
+  .metrics-table tbody, .revenue-table tbody {
+    display: table-row-group;
   }
 }
