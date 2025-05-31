@@ -20,7 +20,8 @@ function App() {
     setMetrics({});
     try {
       // Financial Modeling Prep API: Income Statement
-      const res = await fetch(`https://financialmodelingprep.com/api/v3/income-statement/${symbol.toUpperCase()}?limit=10&apikey=demo`);
+      const apiKey = import.meta.env.VITE_FMP_API_KEY;
+      const res = await fetch(`https://financialmodelingprep.com/api/v3/income-statement/${symbol.toUpperCase()}?limit=10&apikey=${apiKey}`);
       const data = await res.json();
       if (!Array.isArray(data) || data.length === 0) {
         setError('No data found for this ticker.');
