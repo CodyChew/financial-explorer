@@ -44,12 +44,66 @@ function App() {
     grossMarginByYear?: { year: string, grossMarginPct: number }[],
     netMarginByYear?: { year: string, netMarginPct: number }[]
   }>({});
+  const [currentRatio, setCurrentRatio] = useState<number | null>(null);
+  const [currentRatioDate, setCurrentRatioDate] = useState<string | null>(null);
+  const [debtToEbitda, setDebtToEbitda] = useState<number | null>(null);
+  const [debtToEbitdaError, setDebtToEbitdaError] = useState<string | null>(null);
+
+  const fetchCurrentRatio = async (symbol: string) => {
+    const apiKey = import.meta.env.VITE_FINNHUB_API_KEY;
+    if (!apiKey || apiKey === 'undefined') {
+      setError('Finnhub API key is missing. Please set VITE_FINNHUB_API_KEY in your .env file.');
+      setCurrentRatio(null);
+      setCurrentRatioDate(null);
+      setDebtToEbitda(null);
+      setDebtToEbitdaError(null);
+      return;
+    }
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol.toUpperCase()}&metric=all&token=${apiKey}`);
+      const data = await res.json();
+      if (data && data.metric) {
+        // Current Ratio
+        if (data.metric.currentRatioQuarterly) {
+          setCurrentRatio(Number(data.metric.currentRatioQuarterly));
+          setCurrentRatioDate('latest');
+        } else {
+          setCurrentRatio(null);
+          setCurrentRatioDate(null);
+        }
+        // Debt to EBITDA calculation
+        const totalDebt = Number(data.metric.totalDebtQuarterly);
+        const ebitda = Number(data.metric.ebitdaQuarterly);
+        if (totalDebt && ebitda && ebitda !== 0 && isFinite(totalDebt / ebitda)) {
+          setDebtToEbitda(totalDebt / ebitda);
+          setDebtToEbitdaError(null);
+        } else {
+          setDebtToEbitda(null);
+          setDebtToEbitdaError('Debt to EBITDA data cannot be fetched for this ticker.');
+        }
+      } else {
+        setCurrentRatio(null);
+        setCurrentRatioDate(null);
+        setDebtToEbitda(null);
+        setDebtToEbitdaError('Debt to EBITDA data cannot be fetched for this ticker.');
+      }
+    } catch {
+      setCurrentRatio(null);
+      setCurrentRatioDate(null);
+      setDebtToEbitda(null);
+      setDebtToEbitdaError('Debt to EBITDA data cannot be fetched for this ticker.');
+    }
+  };
 
   const fetchRevenue = async (symbol: string) => {
     setLoading(true);
     setError('');
     setRevenueData([]);
     setMetrics({});
+    setCurrentRatio(null);
+    setCurrentRatioDate(null);
+    setDebtToEbitda(null);
+    setDebtToEbitdaError(null);
     try {
       // Financial Modeling Prep API: Income Statement
       const apiKey = import.meta.env.VITE_FMP_API_KEY;
@@ -96,6 +150,7 @@ function App() {
         grossMarginByYear,
         netMarginByYear
       });
+      fetchCurrentRatio(symbol);
     } catch (e) {
       setError('Failed to fetch data.');
     }
@@ -444,6 +499,29 @@ function App() {
               </div>
             )}
           </div>
+          {currentRatio !== null && currentRatioDate && (
+        <div className="current-ratio-section chart-container">
+          <h2>Current Ratio <span style={{fontSize: '1rem', color: '#b0bec5', fontWeight: 400}}>(latest)</span></h2>
+          <div style={{fontSize: '2.2rem', fontWeight: 700, color: currentRatio >= 1 ? '#43a047' : '#d32f2f'}}>
+            {currentRatio.toFixed(2)}
+          </div>
+          <div className="stat-desc">The current ratio measures a company's ability to pay short-term obligations. A value above 1.0 is generally considered healthy.</div>
+        </div>
+      )}
+      {debtToEbitda !== null ? (
+        <div className="current-ratio-section chart-container">
+          <h2>Debt to EBITDA <span style={{fontSize: '1rem', color: '#b0bec5', fontWeight: 400}}>(latest)</span></h2>
+          <div style={{fontSize: '2.2rem', fontWeight: 700, color: debtToEbitda <= 3 ? '#43a047' : '#d32f2f'}}>
+            {debtToEbitda.toFixed(2)}
+          </div>
+          <div className="stat-desc">Debt to EBITDA is a leverage ratio that measures a company's ability to pay off its debt. Lower values (typically below 3) are considered healthier.</div>
+        </div>
+      ) : debtToEbitdaError ? (
+        <div className="current-ratio-section chart-container">
+          <h2>Debt to EBITDA <span style={{fontSize: '1rem', color: '#b0bec5', fontWeight: 400}}>(latest)</span></h2>
+          <div style={{fontSize: '1.1rem', color: '#d32f2f', fontWeight: 600}}>{debtToEbitdaError}</div>
+        </div>
+      ) : null}
         </div>
       )}
     </div>
